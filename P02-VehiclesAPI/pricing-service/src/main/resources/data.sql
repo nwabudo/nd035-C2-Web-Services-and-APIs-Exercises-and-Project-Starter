@@ -1,0 +1,15 @@
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN', 13001456.56, 1);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('JPY', 1301456.56, 2);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('USD',12345.06, 3);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN',7850063.45, 4);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN',54690322.89, 5);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('USD',467392.78, 6);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('CAD', 356754.35, 7);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('GHD',35663335.65, 8);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN',56736733.57, 9);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('USD',46774377.55, 10);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('CAD',4673673.36, 11);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN', 35666356.57, 12);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('EUR',453563.67, 13);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('EUR',567377.56, 14);
+INSERT INTO price (currency, price, vehicle_id) VALUES ('NGN',234677457.56, 15);

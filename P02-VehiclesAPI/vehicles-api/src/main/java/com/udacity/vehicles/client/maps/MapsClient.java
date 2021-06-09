@@ -1,12 +1,20 @@
 package com.udacity.vehicles.client.maps;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.udacity.vehicles.client.prices.Price;
 import com.udacity.vehicles.domain.Location;
+
+import java.time.Duration;
 import java.util.Objects;
+
+import io.netty.handler.timeout.TimeoutException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 
 /**
  * Implements a class to interface with the Maps Client for location data.
@@ -41,7 +49,10 @@ public class MapsClient {
                             .queryParam("lon", location.getLon())
                             .build()
                     )
-                    .retrieve().bodyToMono(Address.class).block();
+                    .retrieve().bodyToMono(Address.class)
+                    .retryWhen(Retry.backoff(2, Duration.ofMillis(25))
+                                    .filter(throwable -> throwable instanceof TimeoutException))
+                    .block();
 
             mapper.map(Objects.requireNonNull(address), location);
 

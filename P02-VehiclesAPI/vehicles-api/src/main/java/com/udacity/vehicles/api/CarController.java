@@ -29,14 +29,14 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/cars")
-class CarController {
+public class CarController {
 
     private final CarService carService;
-    private final CarResourceAssembler assembler;
+    private final CarResourceAssembler carResourceAssembler;
 
-    CarController(CarService carService, CarResourceAssembler assembler) {
+    CarController(CarService carService, CarResourceAssembler carResourceAssembler) {
         this.carService = carService;
-        this.assembler = assembler;
+        this.carResourceAssembler = carResourceAssembler;
     }
 
     /**
@@ -44,8 +44,8 @@ class CarController {
      * @return list of vehicles
      */
     @GetMapping
-    Resources<Resource<Car>> list() {
-        List<Resource<Car>> resources = carService.list().stream().map(assembler::toResource)
+    public Resources<Resource<Car>> list() {
+        List<Resource<Car>> resources = carService.list().stream().map(carResourceAssembler::toResource)
                 .collect(Collectors.toList());
         return new Resources<>(resources,
                 linkTo(methodOn(CarController.class).list()).withSelfRel());
@@ -57,13 +57,14 @@ class CarController {
      * @return all information for the requested vehicle
      */
     @GetMapping("/{id}")
-    Resource<Car> get(@PathVariable Long id) {
+    public Resource<Car> get(@PathVariable Long id) {
         /**
          * TODO: Use the `findById` method from the Car Service to get car information.
          * TODO: Use the `assembler` on that car and return the resulting output.
          *   Update the first line as part of the above implementing.
          */
-        return assembler.toResource(new Car());
+        Car car = this.carService.findById(id);
+        return carResourceAssembler.toResource(car);
     }
 
     /**
@@ -73,13 +74,14 @@ class CarController {
      * @throws URISyntaxException if the request contains invalid fields or syntax
      */
     @PostMapping
-    ResponseEntity<?> post(@Valid @RequestBody Car car) throws URISyntaxException {
+    public ResponseEntity<?> post(@Valid @RequestBody Car car) throws URISyntaxException {
         /**
          * TODO: Use the `save` method from the Car Service to save the input car.
          * TODO: Use the `assembler` on that saved car and return as part of the response.
          *   Update the first line as part of the above implementing.
          */
-        Resource<Car> resource = assembler.toResource(new Car());
+        Car savedCar = this.carService.save(car);
+        Resource<Car> resource = carResourceAssembler.toResource(savedCar);
         return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
     }
 
@@ -97,7 +99,9 @@ class CarController {
          * TODO: Use the `assembler` on that updated car and return as part of the response.
          *   Update the first line as part of the above implementing.
          */
-        Resource<Car> resource = assembler.toResource(new Car());
+        car.setId(id);
+        Car updatedCar = this.carService.save(car);
+        Resource<Car> resource = carResourceAssembler.toResource(updatedCar);
         return ResponseEntity.ok(resource);
     }
 
@@ -111,6 +115,7 @@ class CarController {
         /**
          * TODO: Use the Car Service to delete the requested vehicle.
          */
+        this.carService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,7 +1,5 @@
 package com.udacity.vehicles;
 
-import com.udacity.vehicles.domain.manufacturer.Manufacturer;
-import com.udacity.vehicles.domain.manufacturer.ManufacturerRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -10,6 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.udacity.vehicles.domain.manufacturer.Manufacturer;
+import com.udacity.vehicles.domain.manufacturer.ManufacturerRepository;
 
 /**
  * Launches a Spring Boot application for the Vehicles API,
@@ -51,6 +52,7 @@ public class VehiclesApiApplication {
      * @return created maps endpoint
      */
     @Bean(name="maps")
+    //@LoadBalanced
     public WebClient webClientMaps(@Value("${maps.endpoint}") String endpoint) {
         return WebClient.create(endpoint);
     }
@@ -61,8 +63,12 @@ public class VehiclesApiApplication {
      * @return created pricing endpoint
      */
     @Bean(name="pricing")
+    //@LoadBalanced
     public WebClient webClientPricing(@Value("${pricing.endpoint}") String endpoint) {
-        return WebClient.create(endpoint);
+        return WebClient.builder()
+                        .baseUrl(endpoint)
+                        .defaultHeaders(header -> header.setBasicAuth("user", "password"))
+                        .build();
     }
 
 }
