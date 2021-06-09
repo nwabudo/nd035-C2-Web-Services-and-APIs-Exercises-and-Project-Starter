@@ -1,40 +1,33 @@
 package com.udacity.vehicles.api;
 
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.AutoConfigureJsonTesters;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.udacity.vehicles.client.maps.MapsClient;
 import com.udacity.vehicles.client.prices.PriceClient;
 import com.udacity.vehicles.domain.Condition;
@@ -43,7 +36,6 @@ import com.udacity.vehicles.domain.car.Car;
 import com.udacity.vehicles.domain.car.Details;
 import com.udacity.vehicles.domain.manufacturer.Manufacturer;
 import com.udacity.vehicles.service.CarService;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 /**
  * Implements testing of the CarController class.
@@ -113,6 +105,32 @@ public class CarControllerTest {
 		   .andExpect(status().isBadRequest())
 		   .andExpect(jsonPath("$.message").value("Validation failed"))
 		   .andExpect(jsonPath("$.errors[*]").exists())
+		   .andDo(print());
+	}
+	
+	/**
+	 * Tests if the write operation appropriately returns an updated Car.
+	 * 
+	 * @throws Exception if the update operation of the vehicle fails
+	 */
+	@Test
+	public void updateCar() throws Exception {
+		
+		Car car = getCar();
+		/*car.setCondition(Condition.NEW);
+		Manufacturer manufacturer = new Manufacturer(103, "BMW");
+		car.getDetails().setManufacturer(manufacturer);*/
+		
+		mvc.perform(put("/cars/{id}", 1)
+				.with(userTester())
+				.content(json.write(car).getJson())
+				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				.accept(MediaType.APPLICATION_JSON_UTF8))
+		   .andExpect(status().isOk())
+		   .andExpect(jsonPath("$.details.manufacturer.code").isNotEmpty())
+		   .andExpect(jsonPath("$.condition").value(car.getCondition().name()))
+		   .andExpect(jsonPath("$.details.manufacturer.code").value(car.getDetails().getManufacturer().getCode()))
+		   .andExpect(jsonPath("$.details.manufacturer.name").value(car.getDetails().getManufacturer().getName()))
 		   .andDo(print());
 	}
 
@@ -203,18 +221,15 @@ public class CarControllerTest {
 		return car;
 	}
 
-	private static <T> T fromJSON(final TypeReference<T> type, final String jsonPacket) {
-		T data = null;
-		try {
-			data = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-									 .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
-									 .readValue(jsonPacket, type);
-		} catch (Exception e) {
-			System.out.println("Error in parsing Object " + e.getMessage());
-		}
-		return data;
-	}
-
+	/*
+	 * private static <T> T fromJSON(final TypeReference<T> type, final String
+	 * jsonPacket) { T data = null; try { data = new
+	 * ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+	 * false) .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
+	 * .readValue(jsonPacket, type); } catch (Exception e) {
+	 * System.out.println("Error in parsing Object " + e.getMessage()); } return
+	 * data; }
+	 */
 	public static RequestPostProcessor userTester() {
 		return user("user").password("password").roles("ADMIN");
 	}
